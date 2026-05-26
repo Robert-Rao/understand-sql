@@ -19,7 +19,7 @@ export async function structuredAgentCall<T>(
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12000);
+    const timer = setTimeout(() => controller.abort(), 30000);
 
     try {
       console.log(`[${outputName}] 开始调用 (maxTokens=${maxTokens})...`);
@@ -58,7 +58,7 @@ export async function structuredAgentCall<T>(
       lastError = err instanceof Error ? err : new Error(String(err));
 
       if (err instanceof Error && err.name === "AbortError") {
-        console.error(`[${outputName}] 请求超时 (12s)`);
+        console.error(`[${outputName}] 请求超时 (30s)`);
         if (attempt < retries) {
           console.warn(`[${outputName}] 超时重试 (${attempt + 1}/${retries})`);
           continue;
