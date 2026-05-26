@@ -94,30 +94,34 @@ export async function runPipeline(
   await onProgress({ type: "partial", module: "module2", data: graph });
   await onProgress({ type: "progress", percent: 55, step: "graph" });
 
-  // ===== Step 5: graph-reviewer (55–75%) =====
+  // ===== Step 5+6 (并行): graph-reviewer + sql-tour-teacher =====
+  // Reviewer validates the graph; tour-teacher generates teaching content
+  // They have no dependency on each other — run in parallel to save ~2s
+  const [reviewerResult, tourResult] = await Promise.allSettled([
+    runReviewer({ originalSql: detectorOutput.cleanedSql, dialect, graph }),
+    runTourTeacher({ graph, domainOutput, originalSql: detectorOutput.cleanedSql, dialect }),
+  ]);
+
   let reviewerOutput: ReviewerOutput;
-  try {
-    reviewerOutput = await runReviewer({ originalSql: detectorOutput.cleanedSql, dialect, graph });
-  } catch (err) {
-    warnings.push(`图谱校验失败: ${err}`);
+  let tourOutput: TourTeacherOutput;
+
+  if (reviewerResult.status === "rejected") {
+    warnings.push(`图谱校验失败: ${reviewerResult.reason}`);
     reviewerOutput = { isValid: true, issues: [], summary: "校验跳过（服务错误）" };
+  } else {
+    reviewerOutput = reviewerResult.value;
   }
 
   if (!reviewerOutput.isValid) {
     warnings.push(`图谱存在问题: ${reviewerOutput.issues.filter((i) => i.severity === "error").map((i) => i.description).join("; ")}`);
   }
-  await onProgress({ type: "progress", percent: 75, step: "details" });
 
-  // ===== Step 6: sql-tour-teacher (75–95%) =====
-  let tourOutput: TourTeacherOutput;
-  try {
-    tourOutput = await runTourTeacher({ graph, domainOutput, originalSql: detectorOutput.cleanedSql, dialect });
-  } catch (err) {
-    warnings.push(`教学内容生成失败: ${err}`);
+  if (tourResult.status === "rejected") {
+    warnings.push(`教学内容生成失败: ${tourResult.reason}`);
     tourOutput = { nodeDetails: createFallbackNodeDetails(graph, domainOutput) };
+  } else {
+    tourOutput = tourResult.value;
   }
-
-  await onProgress({ type: "progress", percent: 95, step: "details" });
 
   // ===== Assemble final result =====
   await onProgress({ type: "progress", percent: 100, step: "details" });
