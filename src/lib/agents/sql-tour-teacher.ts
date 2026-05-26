@@ -35,6 +35,6 @@ export async function runTourTeacher(
     graphSummary,
     "sql-tour-teacher",
     1,
-    16384
+    8192
   );
 }

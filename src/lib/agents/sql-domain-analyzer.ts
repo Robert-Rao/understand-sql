@@ -24,6 +24,6 @@ export async function runDomainAnalyzer(
     nodesSummary,
     "sql-domain-analyzer",
     1,
-    4096
+    2048
   );
 }

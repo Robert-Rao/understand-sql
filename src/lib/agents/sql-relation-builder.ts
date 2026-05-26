@@ -30,6 +30,6 @@ export async function runRelationBuilder(
     nodesSummary,
     "sql-relation-builder",
     1,
-    16384
+    8192
   );
 }
