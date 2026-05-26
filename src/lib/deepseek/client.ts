@@ -11,10 +11,11 @@ export async function structuredAgentCall<T>(
   systemPrompt: string,
   userMessage: string,
   outputName: string,
-  retries = 1
+  retries = 1,
+  initialMaxTokens = 16384
 ): Promise<T> {
   let lastError: Error | null = null;
-  let maxTokens = 16384;
+  let maxTokens = initialMaxTokens;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {

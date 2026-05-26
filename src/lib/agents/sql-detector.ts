@@ -13,7 +13,9 @@ export async function runDetector(input: DetectorInput): Promise<DetectorOutput>
   const result = await structuredAgentCall<DetectorOutput>(
     DETECTOR_PROMPT,
     userMessage,
-    "sql-detector"
+    "sql-detector",
+    1,
+    2048
   );
 
   return result;

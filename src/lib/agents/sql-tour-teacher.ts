@@ -33,6 +33,8 @@ export async function runTourTeacher(
   return structuredAgentCall<TourTeacherOutput>(
     TOUR_TEACHER_PROMPT,
     graphSummary,
-    "sql-tour-teacher"
+    "sql-tour-teacher",
+    1,
+    16384
   );
 }

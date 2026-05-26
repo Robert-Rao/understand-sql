@@ -28,6 +28,8 @@ export async function runRelationBuilder(
   return structuredAgentCall<RelationBuilderOutput>(
     RELATION_BUILDER_PROMPT,
     nodesSummary,
-    "sql-relation-builder"
+    "sql-relation-builder",
+    1,
+    16384
   );
 }

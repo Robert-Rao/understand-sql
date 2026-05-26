@@ -21,6 +21,8 @@ export async function runReviewer(input: ReviewerInput): Promise<ReviewerOutput>
   return structuredAgentCall<ReviewerOutput>(
     REVIEWER_PROMPT,
     graphSummary,
-    "graph-reviewer"
+    "graph-reviewer",
+    1,
+    2048
   );
 }

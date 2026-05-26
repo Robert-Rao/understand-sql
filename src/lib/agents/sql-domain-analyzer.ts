@@ -22,6 +22,8 @@ export async function runDomainAnalyzer(
   return structuredAgentCall<DomainAnalyzerOutput>(
     DOMAIN_ANALYZER_PROMPT,
     nodesSummary,
-    "sql-domain-analyzer"
+    "sql-domain-analyzer",
+    1,
+    4096
   );
 }

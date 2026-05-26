@@ -15,7 +15,9 @@ export async function runNodeAnalyzer(input: NodeAnalyzerInput): Promise<NodeAna
   const result = await structuredAgentCall<NodeAnalyzerOutput>(
     NODE_ANALYZER_PROMPT,
     userMessage,
-    "sql-node-analyzer"
+    "sql-node-analyzer",
+    1,
+    4096
   );
 
   return result;
