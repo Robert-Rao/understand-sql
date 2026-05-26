@@ -66,10 +66,12 @@ export async function runPipeline(
   await onProgress({ type: "progress", percent: 30, step: "summary" });
 
   // ===== Step 3+4 (并行): sql-relation-builder + sql-domain-analyzer (30–55%) =====
+  console.log("[Pipeline] 开始并行: relation-builder + domain-analyzer");
   const [relationResult, domainResult] = await Promise.allSettled([
     runRelationBuilder({ nodes: nodeOutput, cleanedSql: detectorOutput.cleanedSql, dialect }),
     runDomainAnalyzer({ sql: detectorOutput.cleanedSql, dialect, nodes: nodeOutput }),
   ]);
+  console.log(`[Pipeline] 并行完成: relation=${relationResult.status} domain=${domainResult.status}`);
 
   let relationOutput: RelationBuilderOutput;
   let domainOutput: DomainAnalyzerOutput;
@@ -95,12 +97,12 @@ export async function runPipeline(
   await onProgress({ type: "progress", percent: 55, step: "graph" });
 
   // ===== Step 5+6 (并行): graph-reviewer + sql-tour-teacher =====
-  // Reviewer validates the graph; tour-teacher generates teaching content
-  // They have no dependency on each other — run in parallel to save ~2s
+  console.log("[Pipeline] 开始并行: reviewer + tour-teacher");
   const [reviewerResult, tourResult] = await Promise.allSettled([
     runReviewer({ originalSql: detectorOutput.cleanedSql, dialect, graph }),
     runTourTeacher({ graph, domainOutput, originalSql: detectorOutput.cleanedSql, dialect }),
   ]);
+  console.log(`[Pipeline] 并行完成: reviewer=${reviewerResult.status} tour=${tourResult.status}`);
 
   let reviewerOutput: ReviewerOutput;
   let tourOutput: TourTeacherOutput;

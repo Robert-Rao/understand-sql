@@ -18,7 +18,13 @@ export async function structuredAgentCall<T>(
   let maxTokens = initialMaxTokens;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+
     try {
+      console.log(`[${outputName}] 开始调用 (maxTokens=${maxTokens})...`);
+      const start = Date.now();
+
       const response = await openai.chat.completions.create(
         {
           model: MODEL,
@@ -29,8 +35,11 @@ export async function structuredAgentCall<T>(
             { role: "user", content: userMessage },
           ],
         },
-        { timeout: 15000 }
+        { signal: controller.signal }
       );
+
+      clearTimeout(timer);
+      console.log(`[${outputName}] 完成，耗时 ${Date.now() - start}ms`);
 
       const rawText = response.choices[0]?.message?.content;
       if (!rawText) {
@@ -45,21 +54,30 @@ export async function structuredAgentCall<T>(
 
       return JSON.parse(text) as T;
     } catch (err) {
+      clearTimeout(timer);
       lastError = err instanceof Error ? err : new Error(String(err));
 
+      if (err instanceof Error && err.name === "AbortError") {
+        console.error(`[${outputName}] 请求超时 (12s)`);
+        if (attempt < retries) {
+          console.warn(`[${outputName}] 超时重试 (${attempt + 1}/${retries})`);
+          continue;
+        }
+        throw new Error(`Agent ${outputName} 请求超时（已重试 ${retries} 次）`);
+      }
+
       if (lastError instanceof SyntaxError) {
-        // Detect truncation: unterminated string or unexpected end
         const msg = lastError.message;
         if (/Unterminated string|Unexpected end of JSON|position \d+/.test(msg) && attempt < retries) {
           maxTokens = Math.min(maxTokens * 2, 65536);
-          console.warn(`Agent ${outputName} JSON 被截断，增加 max_tokens 至 ${maxTokens} 重试...`);
+          console.warn(`[${outputName}] JSON 被截断，增加 max_tokens 至 ${maxTokens} 重试...`);
           continue;
         }
         throw new Error(`Agent ${outputName} 返回了无效的 JSON: ${msg}`);
       }
 
       if (attempt < retries) {
-        console.warn(`Agent ${outputName} 调用失败，重试中 (${attempt + 1}/${retries}):`, lastError.message);
+        console.warn(`[${outputName}] 调用失败，重试中 (${attempt + 1}/${retries}):`, lastError.message);
       }
     }
   }
