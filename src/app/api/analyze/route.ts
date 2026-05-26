@@ -4,6 +4,8 @@ import type { PipelineEvent } from "@/lib/agents/orchestrator";
 import type { StreamEvent } from "@/types/api";
 import type { SqlDialect } from "@/types/graph";
 
+export const runtime = "edge";
+
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({ sql: "", engine: "auto" }));
   const { sql, engine } = body as { sql: string; engine: SqlDialect | "auto" };
