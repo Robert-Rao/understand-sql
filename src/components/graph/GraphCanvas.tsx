@@ -1,13 +1,23 @@
 "use client";
 
 import { useRef, useCallback, useEffect, useState } from "react";
-import CytoscapeComponent from "react-cytoscapejs";
-import cytoscapeLib, { type Core } from "cytoscape";
-import dagre from "cytoscape-dagre";
+import dynamic from "next/dynamic";
+import type { Core } from "cytoscape";
 import type { GraphData } from "@/types/graph";
 import { graphDataToElements, GRAPH_STYLESHEET, LAYOUT_OPTIONS } from "@/lib/cytoscape-utils";
 
-cytoscapeLib.use(dagre);
+// cytoscape is a DOM library — disable SSR + register dagre before mount
+const CytoscapeComponent = dynamic(
+  async () => {
+    const [cytoscapeModule, dagreModule] = await Promise.all([
+      import("cytoscape"),
+      import("cytoscape-dagre"),
+    ]);
+    cytoscapeModule.default.use(dagreModule.default);
+    return (await import("react-cytoscapejs")).default;
+  },
+  { ssr: false }
+);
 
 interface Props {
   graphData: GraphData;
