@@ -35,7 +35,7 @@ function AccordionSection({ title, children, defaultOpen }: { title: string; chi
 export default function LogicBreakdown({ breakdown }: Props) {
   return (
     <div className="space-y-2.5">
-      <AccordionSection title={`数据关联逻辑（${breakdown.joins.length} 个 JOIN）`} defaultOpen>
+      <AccordionSection title={`数据关联逻辑（${breakdown.joins.length} 个 JOIN）`}>
         {breakdown.joins.length === 0 ? (
           <p className="text-sm text-gray-400">无关联逻辑</p>
         ) : (
@@ -68,7 +68,7 @@ export default function LogicBreakdown({ breakdown }: Props) {
       </AccordionSection>
 
       {breakdown.dialectFeatures.length > 0 && (
-        <AccordionSection title={`引擎 & 函数学习（${breakdown.dialectFeatures.length} 项）`} defaultOpen>
+        <AccordionSection title={`引擎 & 函数学习（${breakdown.dialectFeatures.length} 项）`}>
           <ul className="space-y-2">
             {breakdown.dialectFeatures.map((f, i) => (
               <DialectItem key={i} feature={f} />
