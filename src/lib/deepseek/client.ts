@@ -18,15 +18,18 @@ export async function structuredAgentCall<T>(
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const response = await openai.chat.completions.create({
-        model: MODEL,
-        temperature: 0,
-        max_tokens: maxTokens,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userMessage },
-        ],
-      });
+      const response = await openai.chat.completions.create(
+        {
+          model: MODEL,
+          temperature: 0,
+          max_tokens: maxTokens,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userMessage },
+          ],
+        },
+        { timeout: 15000 }
+      );
 
       const rawText = response.choices[0]?.message?.content;
       if (!rawText) {
